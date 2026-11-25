@@ -110,10 +110,15 @@ def api(method, path, **kw):
     return d
 
 
-def publish(video: Path, caption: str) -> str:
+def publish(video: Path, caption: str, kind: str = "reel", thumb_ms=None) -> str:
     size = video.stat().st_size
-    c = api("POST", f"{IG_USER}/media", data={"media_type": "REELS", "upload_type": "resumable",
-                                              "caption": caption, "share_to_feed": "true"})
+    if kind == "story":
+        body = {"media_type": "STORIES", "upload_type": "resumable"}            # stories carry no caption
+    else:
+        body = {"media_type": "REELS", "upload_type": "resumable", "caption": caption, "share_to_feed": "true"}
+        if thumb_ms is not None:
+            body["thumb_offset"] = str(int(thumb_ms))                           # cover = frame at this offset (ms)
+    c = api("POST", f"{IG_USER}/media", data=body)
     cid = c["id"]
     uri = c.get("uri") or f"https://rupload.facebook.com/ig-api-upload/{VERSION}/{cid}"
     last = None
@@ -167,7 +172,7 @@ def post_due():
         # the workflow's concurrency group guarantees only one run at a time)
         job["status"] = "posting"; job["attempts"] = job.get("attempts", 0) + 1; save_job(job)
         try:
-            link = publish(video, job["caption"])
+            link = publish(video, job.get("caption", ""), job.get("kind", "reel"), job.get("thumb_ms"))
             job["status"] = "posted"; job["link"] = link; job.pop("error", None)
             save_job(job)
             say(f"🎉 Posted to @decodedbharat.ai: {job['title']}\n{link}")
