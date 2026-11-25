@@ -36,6 +36,15 @@ def active_jobs(now=None):
     return out
 
 
+def max_run_seconds():
+    """waiter_max.txt (optional, for testing the hand-over) overrides the limit."""
+    try:
+        with open("waiter_max.txt") as fh:
+            return float(fh.read().strip())
+    except Exception:
+        return MAX_RUN_SECONDS
+
+
 def save():
     sh("git", "add", "-A", "jobs", "videos", "state.json")
     if sh("git", "diff", "--cached", "--quiet") != 0:
@@ -61,7 +70,7 @@ def main():
         if not jobs:
             print("nothing left in the next 24 hours - stopping", flush=True)
             return
-        if time.time() - start > MAX_RUN_SECONDS:
+        if time.time() - start > max_run_seconds():
             print(f"{len(jobs)} job(s) left - starting a successor run", flush=True)
             if sh("gh", "workflow", "run", "autopost.yml", "--ref", "main") != 0:
                 sys.exit("could not start successor run")
