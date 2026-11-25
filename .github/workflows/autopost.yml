@@ -2,7 +2,10 @@ name: autopost
 
 on:
   schedule:
-    - cron: "7,37 * * * *"
+    # Slots (IST): 09:00 reel, 12:00 story, 13:00 carousel, 18:00 reel, 20:00 story  (cron is UTC = IST - 5:30)
+    # first try ~3 min after each slot, second try ~38 min after
+    - cron: "33 3,6,7,12,14 * * *"
+    - cron: "8 4,7,8,13,15 * * *"
   workflow_dispatch:
   push:
     branches: [main]
