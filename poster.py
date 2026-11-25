@@ -50,7 +50,7 @@ def say(text):
 
 
 def load_job(p: Path):
-    return json.loads(p.read_text(encoding="utf-8"))
+    return json.loads(p.read_text(encoding="utf-8-sig"))
 
 
 def save_job(job):
@@ -158,8 +158,12 @@ def publish(video: Path, caption: str, kind: str = "reel", thumb_ms=None) -> str
 
 def post_due():
     for p in sorted(JOBS.glob("*.json")):
-        job = load_job(p)
-        if job["status"] != "scheduled":
+        try:
+            job = load_job(p)
+        except Exception as e:                      # one bad job file must never stop the others
+            log(f"skipping unreadable job file {p.name}: {e}")
+            continue
+        if job.get("status") != "scheduled":
             continue
         if datetime.fromisoformat(job["post_at"]) > now():
             continue
