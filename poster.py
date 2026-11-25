@@ -156,6 +156,30 @@ def publish(video: Path, caption: str, kind: str = "reel", thumb_ms=None) -> str
         return media_id
 
 
+def publish_carousel(urls, caption: str) -> str:
+    kids = []
+    for u in urls:
+        kids.append(api("POST", f"{IG_USER}/media", data={"image_url": u, "is_carousel_item": "true"})["id"])
+        time.sleep(1)
+    parent = api("POST", f"{IG_USER}/media", data={"media_type": "CAROUSEL", "children": ",".join(kids), "caption": caption})["id"]
+    t0 = time.time()
+    while True:
+        code = api("GET", parent, params={"fields": "status_code,status"}).get("status_code")
+        log(f"carousel container {code}")
+        if code == "FINISHED":
+            break
+        if code in ("ERROR", "EXPIRED"):
+            raise RuntimeError(f"carousel container {code}")
+        if time.time() - t0 > 300:
+            raise RuntimeError("timed out waiting for carousel processing")
+        time.sleep(8)
+    media_id = api("POST", f"{IG_USER}/media_publish", data={"creation_id": parent})["id"]
+    try:
+        return api("GET", media_id, params={"fields": "permalink"}).get("permalink", media_id)
+    except Exception:
+        return media_id
+
+
 def post_due():
     for p in sorted(JOBS.glob("*.json")):
         try:
@@ -167,8 +191,9 @@ def post_due():
             continue
         if datetime.fromisoformat(job["post_at"]) > now():
             continue
-        video = ROOT / job["video"]
-        if not video.exists():
+        kind = job.get("kind", "reel")
+        video = ROOT / job["video"] if job.get("video") else None
+        if kind != "carousel" and (video is None or not video.exists()):
             job["status"] = "failed"; job["error"] = "video file missing"; save_job(job)
             say(f"⚠️ '{job['title']}' could not be posted: video file missing in the repo.")
             continue
@@ -176,11 +201,15 @@ def post_due():
         # the workflow's concurrency group guarantees only one run at a time)
         job["status"] = "posting"; job["attempts"] = job.get("attempts", 0) + 1; save_job(job)
         try:
-            link = publish(video, job.get("caption", ""), job.get("kind", "reel"), job.get("thumb_ms"))
+            if kind == "carousel":
+                link = publish_carousel(job["images"], job.get("caption", ""))
+            else:
+                link = publish(video, job.get("caption", ""), kind, job.get("thumb_ms"))
             job["status"] = "posted"; job["link"] = link; job.pop("error", None)
             save_job(job)
             say(f"🎉 Posted to @decodedbharat.ai: {job['title']}\n{link}")
-            video.unlink(missing_ok=True)          # keep the repo small
+            if video is not None:
+                video.unlink(missing_ok=True)      # keep the repo small
         except Exception as e:
             job["error"] = str(e)
             if job["attempts"] < MAX_ATTEMPTS:
