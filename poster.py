@@ -64,6 +64,10 @@ APPROVAL_BOT = "IndianDiplomacyReview_bot"   # the bot that sends the approval b
 def handle_taps():
     # Never read another bot's inbox (that would swallow messages meant for its own system).
     me = requests.get(f"{TG}/getMe", timeout=30).json().get("result", {}).get("username")
+    st = json.loads(STATE.read_text()) if STATE.exists() else {"offset": 0}
+    if st.get("bot") != me:                     # recorded so the setup can be checked from the repo
+        st["bot"] = me
+        STATE.write_text(json.dumps(st))
     if me != APPROVAL_BOT:
         log(f"TELEGRAM_BOT_TOKEN belongs to @{me}, expected @{APPROVAL_BOT}: taps not read")
         return
