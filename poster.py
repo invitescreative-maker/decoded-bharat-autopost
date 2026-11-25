@@ -60,7 +60,9 @@ def save_job(job):
 # ------------------------------------------------------------ telegram taps
 def handle_taps():
     state = json.loads(STATE.read_text()) if STATE.exists() else {"offset": 0}
-    r = requests.get(f"{TG}/getUpdates", params={"offset": state["offset"], "timeout": 0}, timeout=30).json()
+    # No stored offset: Telegram update ids can restart lower, and a stale higher offset silently drops taps.
+    # Read everything unconfirmed, handle it, then confirm exactly what was read (end of this function).
+    r = requests.get(f"{TG}/getUpdates", params={"timeout": 0}, timeout=30).json()
     for u in r.get("result", []):
         state["offset"] = u["update_id"] + 1
         cq = u.get("callback_query")
@@ -95,6 +97,8 @@ def handle_taps():
             job["status"] = "discarded"
             say("🗑 Discarded. Nothing was posted.")
         save_job(job)
+    if r.get("result"):
+        requests.get(f"{TG}/getUpdates", params={"offset": r["result"][-1]["update_id"] + 1, "timeout": 0}, timeout=30)
     STATE.write_text(json.dumps(state))
 
 
