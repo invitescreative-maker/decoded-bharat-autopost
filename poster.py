@@ -58,7 +58,15 @@ def save_job(job):
 
 
 # ------------------------------------------------------------ telegram taps
+APPROVAL_BOT = "IndianDiplomacyReview_bot"   # the bot that sends the approval buttons
+
+
 def handle_taps():
+    # Never read another bot's inbox (that would swallow messages meant for its own system).
+    me = requests.get(f"{TG}/getMe", timeout=30).json().get("result", {}).get("username")
+    if me != APPROVAL_BOT:
+        log(f"TELEGRAM_BOT_TOKEN belongs to @{me}, expected @{APPROVAL_BOT}: taps not read")
+        return
     state = json.loads(STATE.read_text()) if STATE.exists() else {"offset": 0}
     # No stored offset: Telegram update ids can restart lower, and a stale higher offset silently drops taps.
     # Read everything unconfirmed, handle it, then confirm exactly what was read (end of this function).
