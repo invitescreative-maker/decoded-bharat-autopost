@@ -8,6 +8,6 @@
   "status": "scheduled",
   "thumb_ms": 1000,
   "cover_url": "https://raw.githubusercontent.com/invitescreative-maker/decoded-bharat-media/main/covers/688d22fa.png",
-  "attempts": 1,
+  "attempts": 2,
   "error": "upload failed: 400: {\"debug_info\":{\"retriable\":false,\"type\":\"ProcessingFailedError\",\"message\":\"{\\\"success\\\":false,\\\"error\\\":{\\\"message\\\":\\\"The ig container is not in the status to upload a video\\\"}}\"}}"
 }
