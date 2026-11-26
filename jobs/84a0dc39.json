@@ -5,5 +5,6 @@
   "caption": "",
   "video": "videos/84a0dc39.mp4",
   "post_at": "2026-11-27T20:00:00+05:30",
-  "status": "scheduled"
+  "status": "discarded",
+  "note": "replaced by new paper-style version"
 }
