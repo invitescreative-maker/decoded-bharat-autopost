@@ -5,9 +5,9 @@
   "caption": "Has your email shown up in a data leak? 🔓\nHave I Been Pwned lets you search your email address for free. Type the address yourself: haveibeenpwned.com\nA clean result is not a guarantee, so keep your passwords unique and turn on two-step login (our advice).\nDid yours show up? Yes or no 👇\nFollow @decodedbharat.ai for AI and tech, explained simply.\n#CyberSecurity #DataBreach #OnlineSafety #Tech #India",
   "video": "videos/da5c5ee9.mp4",
   "post_at": "2026-11-28T09:00:00+05:30",
-  "status": "scheduled",
+  "status": "posted",
   "thumb_ms": 1000,
   "cover_url": "https://raw.githubusercontent.com/invitescreative-maker/decoded-bharat-media/main/covers/da5c5ee9.png",
-  "attempts": 1,
-  "error": "upload failed: 400: {\"debug_info\":{\"retriable\":false,\"type\":\"ProcessingFailedError\",\"message\":\"{\\\"success\\\":false,\\\"error\\\":{\\\"message\\\":\\\"The ig container is not in the status to upload a video\\\"}}\"}}"
+  "attempts": 2,
+  "link": "https://www.instagram.com/reel/DgRS97Msmmc/"
 }
